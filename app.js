@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const feedRouter = require("./routes/feed");
+const authRouter = require("./routes/auth");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const { MONGO_PASS } = require("./SECRET");
@@ -49,11 +50,14 @@ app.use((req, res, next) => {
 });
 
 app.use("/feed", feedRouter);
+app.use("/auth", authRouter);
+
 app.use((err, req, res, next) => {
   console.log(err);
   const status = err.statusCode || 500;
   const message = err.message;
-  res.status(status).json({ message: message });
+  const data = error.data;
+  res.status(status).json({ message: message, data: data });
 });
 
 app.use((req, res, next) => {
