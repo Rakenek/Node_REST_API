@@ -1,11 +1,15 @@
 const path = require("path");
 const express = require("express");
-const feedRouter = require("./routes/feed");
-const authRouter = require("./routes/auth");
+// const feedRouter = require("./routes/feed");
+// const authRouter = require("./routes/auth");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const { MONGO_PASS } = require("./SECRET");
 const multer = require("multer");
+const { graphqlHTTP } = require("express-graphql");
+
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolver = require("./graphql/resolvers");
 
 const MONGODB_URI = `mongodb+srv://raken:${MONGO_PASS}@cluster0.t7o7cnp.mongodb.net/messages?retryWrites=true&w=majority`;
 
@@ -46,11 +50,32 @@ app.use((req, res, next) => {
     "GET, POST, PUT, PATCH, DELETE"
   );
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
   next();
 });
 
-app.use("/feed", feedRouter);
-app.use("/auth", authRouter);
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true,
+    customFormatErrorFn(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const message = err.message || "An error occurred.";
+      const code = err.originalError.code || 500;
+      return { message: message, status: code, data: data };
+    },
+  })
+);
+
+// app.use("/feed", feedRouter);
+// app.use("/auth", authRouter);
 
 app.use((err, req, res, next) => {
   console.log(err);
@@ -66,10 +91,11 @@ app.use((req, res, next) => {
 mongoose
   .connect(MONGODB_URI)
   .then((result) => {
-    const server = app.listen(8080);
-    const io = require("./socket").init(server);
-    io.on("connection", (socket) => {
-      console.log("Client connected");
-    });
+    app.listen(8080);
+    // const server = app.listen(8080);
+    // const io = require("./socket").init(server);
+    // io.on("connection", (socket) => {
+    //   console.log("Client connected");
+    // });
   })
   .catch((err) => console.log(err));
