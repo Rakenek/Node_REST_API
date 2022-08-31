@@ -10,6 +10,7 @@ const { graphqlHTTP } = require("express-graphql");
 
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
+const auth = require("./middleware/auth");
 
 const MONGODB_URI = `mongodb+srv://raken:${MONGO_PASS}@cluster0.t7o7cnp.mongodb.net/messages?retryWrites=true&w=majority`;
 
@@ -55,6 +56,8 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(auth);
 
 app.use(
   "/graphql",
