@@ -12,6 +12,7 @@ const fs = require("fs");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const auth = require("./middleware/auth");
+const { clearImage } = require("./util/file");
 
 const MONGODB_URI = `mongodb+srv://raken:${MONGO_PASS}@cluster0.t7o7cnp.mongodb.net/messages?retryWrites=true&w=majority`;
 
@@ -118,8 +119,3 @@ mongoose
     // });
   })
   .catch((err) => console.log(err));
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
-  fs.unlink(filePath, (err) => console.log(err));
-};
